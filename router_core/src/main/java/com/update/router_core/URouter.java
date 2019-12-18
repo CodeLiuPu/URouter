@@ -3,7 +3,11 @@ package com.update.router_core;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 
 import com.update.router_annotation.model.RouteMeta;
@@ -103,7 +107,66 @@ public class URouter {
 
     public Object navigation(Context context, final Postcard postcard,
                              final int requestCode, final NavigationCallback callback) {
-        return new Object();
+
+        try {
+            prepareCard(postcard);
+        } catch (NoRouteFoundException e) {
+            e.printStackTrace();
+            // 没找到 路由
+            if (null != callback) {
+                callback.onLost(postcard);
+            }
+            return null;
+        }
+        if (null != callback) {
+            callback.onFound(postcard);
+        }
+
+        switch (postcard.getType()) {
+            case ACTIVITY: {
+                final Context currentContext = (null == context)? mApp:context;
+                final Intent intent = new Intent(currentContext,postcard.getDestination());
+                intent.putExtras(postcard.getExtras());
+                int flag = postcard.getFlag();
+                if (-1 != flag){
+                    intent.setFlags(flag);
+                } else if (currentContext instanceof Activity){
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 可能需要返回码
+                        if (requestCode >0){
+                            ActivityCompat.startActivityForResult((Activity) currentContext, intent,
+                                    requestCode, postcard.getOptionsBundle());
+                        } else {
+                            ActivityCompat.startActivity(currentContext, intent, postcard
+                                    .getOptionsBundle());
+                        }
+
+                        if ((0 != postcard.getEnterAnim() || 0 != postcard.getExitAnim())
+                                && currentContext instanceof Activity){
+                            //老版本
+                            ((Activity) currentContext).overridePendingTransition(postcard
+                                            .getEnterAnim()
+                                    , postcard.getExitAnim());
+                        }
+                        // 跳转完成
+                        if (null != callback){
+                            callback.onArrival(postcard);
+                        }
+                    }
+                });
+                break;
+            }
+            case ISERVICE: {
+                return postcard.getService();
+            }
+            default:
+        }
+        return null;
     }
 
     /**
@@ -142,10 +205,10 @@ public class URouter {
                 case ISERVICE: {
                     Class<?> destination = routeMeta.getDestination();
                     IService service = Warehouse.services.get(destination);
-                    if (null == service){
+                    if (null == service) {
                         try {
                             service = (IService) destination.getConstructor().newInstance();
-                            Warehouse.services.put(destination,service);
+                            Warehouse.services.put(destination, service);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
