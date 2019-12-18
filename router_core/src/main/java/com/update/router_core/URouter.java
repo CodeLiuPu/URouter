@@ -9,7 +9,7 @@ import android.app.Application;
  * github : https://github.com/CodeLiuPu/
  */
 public class URouter {
-    
+
     private static final String TAG = "URouter";
     private static final String ROUTE_ROOT_PACKAGE = "com.update.router_core";
     private static final String SDK_NAME = "URouter";
