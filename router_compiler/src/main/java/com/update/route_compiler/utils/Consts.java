@@ -25,7 +25,7 @@ public class Consts {
     public static final String METHOD_LOAD_EXTRA = "loadExtra";
 
     public static final String ACTIVITY = "android.app.Activity";
-    public static final String ISERVICE = "com.update.router_core";
+    public static final String ISERVICE = "com.update.router_core.template.IService";
 
 
     private static final String LANG = "java.lang.";

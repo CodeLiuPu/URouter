@@ -19,7 +19,7 @@ public class RouteMeta {
 
     private Type type;
 
-    // 节点
+    // 节点 (Activity)
     private Element element;
 
     // 注解使用的类对象
