@@ -21,7 +21,7 @@ public class Consts {
     public static final String IROUTE_ROOT = "com.update.router_core.template.IRouteRoot";
     public static final String IEXTRA = "com.update.router_core.template.IExtra";
 
-    public static final String METHOD_LOAD_INFO = "loadInfo";
+    public static final String METHOD_LOAD_INTO = "loadInto";
     public static final String METHOD_LOAD_EXTRA = "loadExtra";
 
     public static final String ACTIVITY = "android.app.Activity";

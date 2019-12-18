@@ -9,6 +9,13 @@ import android.app.Application;
  * github : https://github.com/CodeLiuPu/
  */
 public class URouter {
+    
+    private static final String TAG = "URouter";
+    private static final String ROUTE_ROOT_PACKAGE = "com.update.router_core";
+    private static final String SDK_NAME = "URouter";
+    private static final String SEPARATOR = "$$";
+    private static final String SUFFIX_ROOT = "Root";
+    private static Application mApp;
 
     private URouter() {
     }
@@ -17,8 +24,11 @@ public class URouter {
         return Holder.INSTANCE;
     }
 
-    public static void init(Application application){
-
+    /**
+     * 初始化
+     */
+    public static void init(Application application) {
+        mApp = application;
     }
 
     private static final class Holder {

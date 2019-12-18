@@ -1,4 +1,4 @@
-package com.update.router_core.template;
+package com.update.router_core;
 
 /**
  * @author : liupu
@@ -6,7 +6,5 @@ package com.update.router_core.template;
  * desc   :
  * github : https://github.com/CodeLiuPu/
  */
-public interface IExtra {
-
-    void loadExtra(Object target);
+public class ExtraManager {
 }
