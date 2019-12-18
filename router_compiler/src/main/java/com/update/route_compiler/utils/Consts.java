@@ -11,7 +11,7 @@ import com.squareup.javapoet.ClassName;
 public class Consts {
 
     public static final ClassName router =
-            ClassName.get("com.dn_alan.router_core", "URouter");
+            ClassName.get("com.update.router_core", "URouter");
 
     public static final String ARGUMENTS_NAME = "moduleName";
     public static final String ANN_TYPE_ROUTE = "com.update.router_annotation.Route";
