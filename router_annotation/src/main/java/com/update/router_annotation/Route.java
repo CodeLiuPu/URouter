@@ -41,5 +41,5 @@ public @interface Route {
      * 将路由节点分组
      * - 可以实现按组动态配置
      */
-    String group();
+    String group() default "";
 }
