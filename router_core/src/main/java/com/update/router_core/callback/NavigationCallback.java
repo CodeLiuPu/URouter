@@ -1,5 +1,7 @@
 package com.update.router_core.callback;
 
+import com.update.router_core.Postcard;
+
 /**
  * @author : liupu
  * date   : 2019/12/18
@@ -7,9 +9,18 @@ package com.update.router_core.callback;
  * github : https://github.com/CodeLiuPu/
  */
 public interface NavigationCallback {
-    void onFound();
+    /**
+     * 找到跳转页面
+     */
+    void onFound(Postcard postcard);
 
-    void onLost();
+    /**
+     * 未找到跳转页面
+     */
+    void onLost(Postcard postcard);
 
-    void onArrival();
+    /**
+     * 跳转成功
+     */
+    void onArrival(Postcard postcard);
 }

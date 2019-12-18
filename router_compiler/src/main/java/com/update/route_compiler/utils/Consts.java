@@ -10,16 +10,16 @@ import com.squareup.javapoet.ClassName;
  */
 public class Consts {
 
-    public static final ClassName router =
+    public static final ClassName ROUTER =
             ClassName.get("com.update.router_core", "URouter");
 
     public static final String ARGUMENTS_NAME = "moduleName";
     public static final String ANN_TYPE_ROUTE = "com.update.router_annotation.Route";
     public static final String ANN_TYPE_EXTRA = "com.update.router_annotation.Extra";
 
-    public static final String IROUTE_GROUP = "";
-    public static final String IROUTE_ROOT = "";
-    public static final String IEXTRA = "";
+    public static final String IROUTE_GROUP = "com.update.router_core.template.IRouteGroup";
+    public static final String IROUTE_ROOT = "com.update.router_core.template.IRouteRoot";
+    public static final String IEXTRA = "com.update.router_core.template.IExtra";
 
     public static final String METHOD_LOAD_INFO = "loadInfo";
     public static final String METHOD_LOAD_EXTRA = "loadExtra";
