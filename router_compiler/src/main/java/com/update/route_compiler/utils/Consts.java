@@ -11,14 +11,21 @@ import com.squareup.javapoet.ClassName;
 public class Consts {
 
     public static final ClassName router =
-            ClassName.get("com.dn_alan.router_core", "DNRouter");
+            ClassName.get("com.dn_alan.router_core", "URouter");
+
+    public static final String ARGUMENTS_NAME = "moduleName";
+    public static final String ANN_TYPE_ROUTE = "com.update.router_annotation.Route";
+    public static final String ANN_TYPE_EXTRA = "com.update.router_annotation.Extra";
 
     public static final String IROUTE_GROUP = "";
+    public static final String IROUTE_ROOT = "";
+    public static final String IEXTRA = "";
+
+    public static final String METHOD_LOAD_INFO = "loadInfo";
+    public static final String METHOD_LOAD_EXTRA = "loadExtra";
 
     public static final String ACTIVITY = "android.app.Activity";
     public static final String ISERVICE = "com.update.router_core";
-
-
 
 
     private static final String LANG = "java.lang.";
