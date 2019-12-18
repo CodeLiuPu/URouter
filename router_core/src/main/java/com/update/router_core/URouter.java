@@ -8,8 +8,10 @@ import android.text.TextUtils;
 
 import com.update.router_annotation.model.RouteMeta;
 import com.update.router_core.callback.NavigationCallback;
+import com.update.router_core.exception.NoRouteFoundException;
 import com.update.router_core.template.IRouteGroup;
 import com.update.router_core.template.IRouteRoot;
+import com.update.router_core.template.IService;
 import com.update.router_core.utils.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -100,19 +102,63 @@ public class URouter {
     }
 
     public Object navigation(Context context, final Postcard postcard,
-                                final int requestCode, final NavigationCallback callback) {
+                             final int requestCode, final NavigationCallback callback) {
         return new Object();
     }
 
-    private void preapareCard(Postcard card) {
+    /**
+     * 准备卡片
+     */
+    private void prepareCard(Postcard card) {
         RouteMeta routeMeta = Warehouse.routes.get(card.getPath());
         // 还未准备的
         if (null == routeMeta) {
             // 创建并调用 loadInto 函数, 并记录进仓库
             Class<? extends IRouteGroup> groupMeta = Warehouse.groupsIndex.get(card.getGroup());
+            if (null == groupMeta) {
+                String msg = "not found the route: " + card.getGroup() + " " + card.getPath();
+                throw new NoRouteFoundException(msg);
+            }
+            IRouteGroup iRouteGroup;
 
+            try {
+                iRouteGroup = groupMeta.getConstructor().newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException("路由分组映射表记录失败.", e);
+            }
 
+            iRouteGroup.loadInto(Warehouse.routes);
+
+            // 已经准备过 就可以移除了 (不会一直存在内存中)
+            Warehouse.groupsIndex.remove(card.getGroup());
+            // 再次进入 else
+            prepareCard(card);
         } else {
+            // 类 要跳转的 activity 或者 IService实现类
+            card.setDestination(routeMeta.getDestination());
+            card.setType(routeMeta.getType());
+
+            switch (routeMeta.getType()) {
+                case ISERVICE: {
+                    Class<?> destination = routeMeta.getDestination();
+                    IService service = Warehouse.services.get(destination);
+                    if (null == service){
+                        try {
+                            service = (IService) destination.getConstructor().newInstance();
+                            Warehouse.services.put(destination,service);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    card.setService(service);
+                    break;
+                }
+                case ACTIVITY: {
+                    break;
+                }
+                default:
+            }
+
 
         }
 
