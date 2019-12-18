@@ -246,6 +246,6 @@ public class Postcard extends RouteMeta {
 
 
     public Object navigation(Activity activity, int requestCode, NavigationCallback callback) {
-        return new Object();
+        return URouter.get().navigation(activity, this, requestCode, callback);
     }
 }

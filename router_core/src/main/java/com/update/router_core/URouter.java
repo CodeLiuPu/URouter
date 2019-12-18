@@ -1,6 +1,19 @@
 package com.update.router_core;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.text.TextUtils;
+
+import com.update.router_annotation.model.RouteMeta;
+import com.update.router_core.callback.NavigationCallback;
+import com.update.router_core.template.IRouteGroup;
+import com.update.router_core.template.IRouteRoot;
+import com.update.router_core.utils.ClassUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
 
 /**
  * @author : liupu
@@ -29,6 +42,88 @@ public class URouter {
      */
     public static void init(Application application) {
         mApp = application;
+    }
+
+    public static void loadInfo() throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        // 获取 所有 apt生成 的路由类的全类名 (路由表)
+        Set<String> routerMap = ClassUtils.getFileNameByPackageName(mApp, ROUTE_ROOT_PACKAGE);
+        for (String className : routerMap) {
+            if (className.startsWith(ROUTE_ROOT_PACKAGE + "." + SDK_NAME
+                    + SEPARATOR + SUFFIX_ROOT)) {
+                // root 中 注册的是分组信息, 讲分组信息加入仓库中
+                IRouteRoot iRouteRoot = (IRouteRoot) Class.forName(className).getConstructor().newInstance();
+                iRouteRoot.loadInto(Warehouse.groupsIndex);
+            }
+        }
+        //        for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse
+//                .groupsIndex.entrySet()) {
+//            Log.e(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry
+//                    .getValue() + "]");
+//        }
+    }
+
+    public Postcard build(String path) {
+        if (TextUtils.isEmpty(path)) {
+            throw new RuntimeException("path cannot be empty");
+        } else {
+            return build(path, extractGroup(path));
+        }
+    }
+
+    public Postcard build(String path, String group) {
+        if (TextUtils.isEmpty(path) || TextUtils.isEmpty(group)) {
+            throw new RuntimeException("path or group cannot be empty");
+        } else {
+            return new Postcard(path, group);
+        }
+    }
+
+    /**
+     * 获取组别
+     */
+    private String extractGroup(String path) {
+        if (TextUtils.isEmpty(path) || !path.startsWith("/")) {
+            throw new RuntimeException(path + " : cannot get group");
+        }
+
+        try {
+            String defaultGroup = path.substring(1, path.indexOf("/", 1));
+            if (TextUtils.isEmpty(defaultGroup)) {
+                throw new RuntimeException(path + " : cannot get group");
+            } else {
+                return defaultGroup;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Object navigation(Context context, final Postcard postcard,
+                                final int requestCode, final NavigationCallback callback) {
+        return new Object();
+    }
+
+    private void preapareCard(Postcard card) {
+        RouteMeta routeMeta = Warehouse.routes.get(card.getPath());
+        // 还未准备的
+        if (null == routeMeta) {
+            // 创建并调用 loadInto 函数, 并记录进仓库
+            Class<? extends IRouteGroup> groupMeta = Warehouse.groupsIndex.get(card.getGroup());
+
+
+        } else {
+
+        }
+
+    }
+
+
+    /**
+     * 注入
+     */
+    public void inject(Activity activity) {
+        ExtraManager.get().loadExtras(activity);
     }
 
     private static final class Holder {
