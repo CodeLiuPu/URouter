@@ -1,1 +1,1 @@
-include ':app', ':module1', ':module2', ':router_core'
+include ':app', ':module1', ':module2', ':router_core', ':router_annotation'
