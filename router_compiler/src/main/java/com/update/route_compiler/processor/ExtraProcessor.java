@@ -1,8 +1,15 @@
 package com.update.route_compiler.processor;
 
 import com.google.auto.service.AutoService;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 import com.update.route_compiler.utils.Consts;
+import com.update.route_compiler.utils.LoadExtraBuilder;
 import com.update.route_compiler.utils.Log;
+import com.update.route_compiler.utils.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +28,9 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -70,13 +79,60 @@ public class ExtraProcessor extends AbstractProcessor {
         filerUtils = processingEnv.getFiler();
     }
 
+    /**
+     * 相当于 main函数, 正式处理注解
+     *
+     * @param set              使用了支持处理注解 的 节点集合
+     * @param roundEnvironment 标识当前或是之前的的运行环境, 可以通过该对象查找找到的注解
+     * @return true 标识后续处理器不会再处理 (已经处理)
+     */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         return false;
     }
 
     private void generateAutoWired() throws IOException {
+        TypeMirror type_Activity = elementUtils.getTypeElement(Consts.ACTIVITY).asType();
+        TypeElement IExtra = elementUtils.getTypeElement(Consts.IEXTRA);
 
+        // 参数 Object target
+        ParameterSpec objectParameterSpec = ParameterSpec.builder(TypeName.OBJECT, "target").build();
+        if (!Utils.isEmpty(parentAndChild)) {
+            // 遍历 所有需要注入的 类: 属性
+            for (Map.Entry<TypeElement, List<Element>> entry : parentAndChild.entrySet()) {
+                // 类
+                TypeElement rawClassElement = entry.getKey();
+                if (!typeUtils.isSubtype(rawClassElement.asType(), type_Activity)) {
+                    throw new RuntimeException("[Just Support Activity Field]:" + rawClassElement);
+                }
+
+                // 封装的 函数生成类
+                LoadExtraBuilder loadExtra = new LoadExtraBuilder(objectParameterSpec);
+                loadExtra.setElementUtils(elementUtils);
+                loadExtra.setTypeUtils(typeUtils);
+                ClassName className = ClassName.get(rawClassElement);
+                loadExtra.injectTarget(className);
+
+                // 遍历属性
+                for (int i = 0; i < entry.getValue().size(); i++) {
+                    Element element = entry.getValue().get(i);
+                    loadExtra.buildStatement(element);
+                }
+
+                // 生成 Java类名
+                String extraClassName = rawClassElement.getSimpleName() + Consts.NAME_OF_EXTRA;
+
+                // 生成 XX$$Autowired
+                JavaFile.builder(className.packageName(),
+                        TypeSpec.classBuilder(extraClassName)
+                                .addSuperinterface(ClassName.get(IExtra))
+                                .addModifiers(Modifier.PUBLIC)
+                                .addMethod(loadExtra.build())
+                                .build())
+                        .build().writeTo(filerUtils);
+                log.i("Generated Extra: " + className.packageName() + "." + extraClassName);
+            }
+        }
     }
 
     /**
