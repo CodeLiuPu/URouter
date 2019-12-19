@@ -124,13 +124,13 @@ public class URouter {
 
         switch (postcard.getType()) {
             case ACTIVITY: {
-                final Context currentContext = (null == context)? mApp:context;
-                final Intent intent = new Intent(currentContext,postcard.getDestination());
+                final Context currentContext = (null == context) ? mApp : context;
+                final Intent intent = new Intent(currentContext, postcard.getDestination());
                 intent.putExtras(postcard.getExtras());
                 int flag = postcard.getFlag();
-                if (-1 != flag){
+                if (-1 != flag) {
                     intent.setFlags(flag);
-                } else if (currentContext instanceof Activity){
+                } else if (currentContext instanceof Activity) {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
 
@@ -138,7 +138,7 @@ public class URouter {
                     @Override
                     public void run() {
                         // 可能需要返回码
-                        if (requestCode >0){
+                        if (requestCode > 0) {
                             ActivityCompat.startActivityForResult((Activity) currentContext, intent,
                                     requestCode, postcard.getOptionsBundle());
                         } else {
@@ -147,14 +147,14 @@ public class URouter {
                         }
 
                         if ((0 != postcard.getEnterAnim() || 0 != postcard.getExitAnim())
-                                && currentContext instanceof Activity){
+                                && currentContext instanceof Activity) {
                             //老版本
                             ((Activity) currentContext).overridePendingTransition(postcard
                                             .getEnterAnim()
                                     , postcard.getExitAnim());
                         }
                         // 跳转完成
-                        if (null != callback){
+                        if (null != callback) {
                             callback.onArrival(postcard);
                         }
                     }
@@ -221,12 +221,8 @@ public class URouter {
                 }
                 default:
             }
-
-
         }
-
     }
-
 
     /**
      * 注入
