@@ -6,6 +6,7 @@ import com.update.route_compiler.utils.Log;
 import com.update.route_compiler.utils.Utils;
 import com.update.router_annotation.model.RouteMeta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +114,8 @@ public class RouteProcessor extends AbstractProcessor {
 
     /**
      * 相当于 main函数, 正式处理注解
-     * @param set 使用了支持处理注解 的 节点集合
+     *
+     * @param set              使用了支持处理注解 的 节点集合
      * @param roundEnvironment 标识当前或是之前的的运行环境, 可以通过该对象查找找到的注解
      * @return true 标识后续处理器不会再处理 (已经处理)
      */
@@ -122,18 +124,36 @@ public class RouteProcessor extends AbstractProcessor {
         return false;
     }
 
-    private boolean routeVerify(RouteMeta meta){
+    private void categories(RouteMeta routeMeta) {
+        if (routeVerify(routeMeta)) {
+            log.i("Group Info, Group Name Group = " + routeMeta.getGroup()
+                    + ", Path = " + routeMeta.getPath());
+            List<RouteMeta> routeMetas = groupMap.get(routeMeta.getGroup());
+            // 如果 未记录分组 则创建
+            if (Utils.isEmpty(routeMetas)) {
+                List<RouteMeta> routeMetaSet = new ArrayList<>();
+                routeMetaSet.add(routeMeta);
+                groupMap.put(routeMeta.getGroup(), routeMetaSet);
+            } else {
+                routeMetas.add(routeMeta);
+            }
+        } else {
+            log.i("Group Info Error: " + routeMeta.getPath());
+        }
+    }
+
+    private boolean routeVerify(RouteMeta meta) {
         String path = meta.getPath();
         String group = meta.getGroup();
         // 路由地址必须以 / 开头
-        if (Utils.isEmpty(path) || !path.startsWith("/")){
+        if (Utils.isEmpty(path) || !path.startsWith("/")) {
             return false;
         }
 
         // 如果没有设置分组, 则以第一个 /  后的节点为分组(所以path 必须 2个 /)
-        if (Utils.isEmpty(group)){
+        if (Utils.isEmpty(group)) {
             String defaultGroup = path.substring(1, path.indexOf("/", 1));
-            if (Utils.isEmpty(defaultGroup)){
+            if (Utils.isEmpty(defaultGroup)) {
                 return false;
             }
             meta.setGroup(defaultGroup);
