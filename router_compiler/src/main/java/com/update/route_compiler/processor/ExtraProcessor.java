@@ -10,6 +10,7 @@ import com.update.route_compiler.utils.Consts;
 import com.update.route_compiler.utils.LoadExtraBuilder;
 import com.update.route_compiler.utils.Log;
 import com.update.route_compiler.utils.Utils;
+import com.update.router_annotation.Extra;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -88,6 +89,19 @@ public class ExtraProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
+        if (!Utils.isEmpty(set)) {
+            Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(Extra.class);
+            if (!Utils.isEmpty(elements)) {
+                try {
+                    categories(elements);
+                    generateAutoWired();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            return true;
+        }
         return false;
     }
 
