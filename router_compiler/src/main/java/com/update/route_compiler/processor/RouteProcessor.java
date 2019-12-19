@@ -1,11 +1,19 @@
 package com.update.route_compiler.processor;
 
 import com.google.auto.service.AutoService;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.WildcardTypeName;
 import com.update.route_compiler.utils.Consts;
 import com.update.route_compiler.utils.Log;
 import com.update.route_compiler.utils.Utils;
 import com.update.router_annotation.model.RouteMeta;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +30,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -124,6 +133,47 @@ public class RouteProcessor extends AbstractProcessor {
         return false;
     }
 
+    private void generatedRoot(TypeElement iRouteRoot, TypeElement iRouteGroup) throws IOException {
+        // 类型 Map<String,Class<? extends IRouteGroup>> routes>
+        // Wildcard 通配符
+        ParameterizedTypeName routes = ParameterizedTypeName.get(
+                ClassName.get(Map.class),
+                ClassName.get(String.class),
+                ParameterizedTypeName.get(
+                        ClassName.get(Class.class),
+                        WildcardTypeName.subtypeOf(ClassName.get(iRouteGroup))
+                )
+        );
+
+        // 参数 Map<String,Class<? extends IRouteGroup>> routes> routes
+        ParameterSpec rootParameterSpec =
+                ParameterSpec.builder(routes, "routes").build();
+
+        // 函数 public void loadInfo(Map<String,Class<? extends IRouteGroup>> routes> routes)
+        MethodSpec.Builder loadIntoMethodOfRootBuilder = MethodSpec.methodBuilder(Consts.METHOD_LOAD_INTO)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(rootParameterSpec);
+
+        // 函数体
+        for (Map.Entry<String, String> entry : rootMap.entrySet()) {
+            loadIntoMethodOfRootBuilder.addStatement("routes.put($S, $T.class)", entry,
+                    ClassName.get(Consts.PACKAGE_OF_GENERATE_FILE, entry.getValue()));
+        }
+
+        // 生成 $Root$类
+        String rootClassName = Consts.NAME_OF_ROOT + moduleName;
+        JavaFile.builder(Consts.PACKAGE_OF_GENERATE_FILE,
+                TypeSpec.classBuilder(rootClassName)
+                        .addSuperinterface(ClassName.get(iRouteRoot))
+                        .addModifiers(Modifier.PUBLIC)
+                        .addMethod(loadIntoMethodOfRootBuilder.build())
+                        .build())
+                .build().writeTo(filerUtils);
+
+        log.i("Generated RouteRoot: " + Consts.PACKAGE_OF_GENERATE_FILE + "." + rootClassName);
+    }
+
     private void categories(RouteMeta routeMeta) {
         if (routeVerify(routeMeta)) {
             log.i("Group Info, Group Name Group = " + routeMeta.getGroup()
@@ -142,6 +192,9 @@ public class RouteProcessor extends AbstractProcessor {
         }
     }
 
+    /**
+     * 验证路由信息必须存在path(并且设置分组)
+     */
     private boolean routeVerify(RouteMeta meta) {
         String path = meta.getPath();
         String group = meta.getGroup();
