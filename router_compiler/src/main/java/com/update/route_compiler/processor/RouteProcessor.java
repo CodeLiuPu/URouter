@@ -3,6 +3,7 @@ package com.update.route_compiler.processor;
 import com.google.auto.service.AutoService;
 import com.update.route_compiler.utils.Consts;
 import com.update.route_compiler.utils.Log;
+import com.update.route_compiler.utils.Utils;
 import com.update.router_annotation.model.RouteMeta;
 
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.TreeMap;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -85,6 +87,36 @@ public class RouteProcessor extends AbstractProcessor {
 
     private Log log;
 
+    /**
+     * 初始化 从 {@link ProcessingEnvironment} 中获得一系列处理器工具
+     */
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnvironment) {
+        super.init(processingEnvironment);
+        // 获取 apt 日志输出
+        log = Log.newLog(processingEnvironment.getMessager());
+        log.i("init()");
+        elementUtils = processingEnv.getElementUtils();
+        typeUtils = processingEnvironment.getTypeUtils();
+        filerUtils = processingEnv.getFiler();
+
+        // 参数是模块名 为了防止 多模块/组件化 开发时, 生成相同的 xx$$ROOT$$ 文件
+        Map<String, String> options = processingEnv.getOptions();
+        if (Utils.isEmpty(options)) {
+            moduleName = options.get(Consts.ARGUMENTS_NAME);
+        }
+        log.i("RouteProcessor Parmaters:" + moduleName);
+        if (Utils.isEmpty(moduleName)) {
+            throw new RuntimeException("Not set Processor Parameters.");
+        }
+    }
+
+    /**
+     * 相当于 main函数, 正式处理注解
+     * @param set 使用了支持处理注解 的 节点集合
+     * @param roundEnvironment 标识当前或是之前的的运行环境, 可以通过该对象查找找到的注解
+     * @return true 标识后续处理器不会再处理 (已经处理)
+     */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         return false;
