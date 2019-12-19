@@ -11,6 +11,7 @@ import com.squareup.javapoet.WildcardTypeName;
 import com.update.route_compiler.utils.Consts;
 import com.update.route_compiler.utils.Log;
 import com.update.route_compiler.utils.Utils;
+import com.update.router_annotation.Route;
 import com.update.router_annotation.model.RouteMeta;
 
 import java.io.IOException;
@@ -30,8 +31,10 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -130,7 +133,55 @@ public class RouteProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
+        // 使用了需要处理的注解
+        if (!Utils.isEmpty(set)) {
+            // 获取所有被 Route注解 的元素集合
+            Set<? extends Element> routeElements = roundEnvironment.getElementsAnnotatedWith(Route.class);
+            // 处理 Route注解
+            if (!Utils.isEmpty(routeElements)) {
+                try {
+                    log.i("Route Class: ===" + routeElements.size());
+                    parseRoutes(routeElements);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            return true;
+        }
         return false;
+    }
+
+    private void parseRoutes(Set<? extends Element> routeElements) throws IOException {
+        // 支持配置 路由类的类型
+        TypeElement activity = elementUtils.getTypeElement(Consts.ACTIVITY);
+        // 节点描述 Mirror
+        TypeMirror type_Activity = activity.asType();
+        log.i("Route Class: ===" + type_Activity);
+        TypeElement iService = elementUtils.getTypeElement(Consts.ISERVICE);
+        TypeMirror type_IService = iService.asType();
+
+        // groupMap (组名: 路由信息) 集合
+        for (Element element : routeElements) {
+            // 路由信息
+            RouteMeta routeMeta;
+            // 使用 Route注解 的 类信息
+            TypeMirror tm = element.asType();
+            log.i("Route Class: " + tm.toString());
+
+            Route route = element.getAnnotation(Route.class);
+            // 是否是 Activity 使用了 Route注解
+            if (typeUtils.isSubtype(tm, type_Activity)) {
+                routeMeta = new RouteMeta(RouteMeta.Type.ACTIVITY, route, element);
+            } else if (typeUtils.isSubtype(tm, type_IService)) {
+                routeMeta = new RouteMeta(RouteMeta.Type.ISERVICE, route, element);
+            } else {
+                throw new RuntimeException("[Just Support Activity/IService Route] :" + element);
+            }
+
+            // 分组信息记录 groupMap <Group分组,RouteMeta路由信息> 集合
+            categories(routeMeta);
+        }
     }
 
     private void generatedGroup(TypeElement iRouteGroup) throws IOException {
@@ -187,7 +238,7 @@ public class RouteProcessor extends AbstractProcessor {
             log.i("Generated RouteGroup: " + Consts.PACKAGE_OF_GENERATE_FILE + "." + groupClassName);
 
             // 分组名 和 生成的对应的Group类 类名
-            rootMap.put(groupName,groupClassName);
+            rootMap.put(groupName, groupClassName);
         }
     }
 
