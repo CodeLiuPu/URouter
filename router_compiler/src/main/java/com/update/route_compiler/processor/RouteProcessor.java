@@ -133,6 +133,64 @@ public class RouteProcessor extends AbstractProcessor {
         return false;
     }
 
+    private void generatedGroup(TypeElement iRouteGroup) throws IOException {
+        // 参数 Map<String,RouteMeta>
+        ParameterizedTypeName atlas = ParameterizedTypeName.get(
+                ClassName.get(Map.class),
+                ClassName.get(String.class),
+                ClassName.get(RouteMeta.class)
+        );
+
+        // 参数 Map<String,RouteMeta> atlas
+        ParameterSpec groupParameterSpec = ParameterSpec.builder(atlas, "atlas").build();
+
+        // 遍历分组, 每个分组创建一个 $$Group$$ 类
+        for (Map.Entry<String, List<RouteMeta>> entry : groupMap.entrySet()) {
+            // 类成员函数 loadInfo() 声明构建
+            // 函数 public void loadInfo(Map<String,RouteMeta> atlas)
+            MethodSpec.Builder loadIntoMethodOfGroupBuilder =
+                    MethodSpec.methodBuilder(Consts.METHOD_LOAD_INTO)
+                            .addAnnotation(Override.class)
+                            .addModifiers(Modifier.PUBLIC)
+                            .addParameter(groupParameterSpec);
+
+            // 分组名 与 对应分组中的信息
+            String groupName = entry.getKey();
+            List<RouteMeta> groupData = entry.getValue();
+
+            // 遍历 分组中的 条目数据
+            for (RouteMeta routeMeta : groupData) {
+                // 组装函数体:
+                // atlas.put(地址,RouteMeta.build(Class,path,group))
+                // $S https://github.com/square/javapoet#s-for-strings
+                // $T https://github.com/square/javapoet#t-for-types
+                loadIntoMethodOfGroupBuilder.addStatement(
+                        "atlas.put($S, $T.build($T.$L,$T.class, $S, $S))",
+                        routeMeta.getPath(),
+                        ClassName.get(RouteMeta.class),
+                        ClassName.get(RouteMeta.Type.class),
+                        routeMeta.getType(),
+                        ClassName.get((TypeElement) routeMeta.getElement()),
+                        routeMeta.getPath().toLowerCase(),
+                        routeMeta.getGroup().toLowerCase());
+            }
+
+            // 创建 java文件($$Group$$) 组
+            String groupClassName = Consts.NAME_OF_GROUP + groupName;
+            JavaFile.builder(Consts.PACKAGE_OF_GENERATE_FILE,
+                    TypeSpec.classBuilder(groupClassName)
+                            .addSuperinterface(ClassName.get(iRouteGroup))
+                            .addModifiers(Modifier.PUBLIC)
+                            .addMethod(loadIntoMethodOfGroupBuilder.build())
+                            .build())
+                    .build().writeTo(filerUtils);
+            log.i("Generated RouteGroup: " + Consts.PACKAGE_OF_GENERATE_FILE + "." + groupClassName);
+
+            // 分组名 和 生成的对应的Group类 类名
+            rootMap.put(groupName,groupClassName);
+        }
+    }
+
     private void generatedRoot(TypeElement iRouteRoot, TypeElement iRouteGroup) throws IOException {
         // 类型 Map<String,Class<? extends IRouteGroup>> routes>
         // Wildcard 通配符
