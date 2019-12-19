@@ -121,4 +121,24 @@ public class RouteProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         return false;
     }
+
+    private boolean routeVerify(RouteMeta meta){
+        String path = meta.getPath();
+        String group = meta.getGroup();
+        // 路由地址必须以 / 开头
+        if (Utils.isEmpty(path) || !path.startsWith("/")){
+            return false;
+        }
+
+        // 如果没有设置分组, 则以第一个 /  后的节点为分组(所以path 必须 2个 /)
+        if (Utils.isEmpty(group)){
+            String defaultGroup = path.substring(1, path.indexOf("/", 1));
+            if (Utils.isEmpty(defaultGroup)){
+                return false;
+            }
+            meta.setGroup(defaultGroup);
+            return true;
+        }
+        return true;
+    }
 }
