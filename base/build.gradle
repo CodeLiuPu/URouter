@@ -8,7 +8,6 @@ android {
         versionCode appVersion.versionCode
         versionName appVersion.versionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {

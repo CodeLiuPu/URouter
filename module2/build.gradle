@@ -1,7 +1,7 @@
 //根据isModule标签动态的切换 集成/组件模式
-if (isModule){
+if (isModule) {
     apply plugin: 'com.android.library'
-}else{
+} else {
     apply plugin: 'com.android.application'
 }
 android {
@@ -19,20 +19,17 @@ android {
             }
         }
         //组件模式下
-        if (!isModule){
+        if (!isModule) {
             applicationId appId.module2
         }
 
         //资源配置
-        sourceSets{
-            main{
+        sourceSets {
+            main {
                 //在组件模式下 使用不同的manifest文件
-                if(!isModule){
+                if (!isModule) {
                     manifest.srcFile 'src/main/module/AndroidManifest.xml'
-                    java.srcDirs 'src/main/module/java','src/main/java'
-
-                }else{
-                    manifest.srcFile 'src/main/AndroidManifest.xml'
+                    java.srcDirs 'src/main/module/java', 'src/main/java'
                 }
             }
         }
