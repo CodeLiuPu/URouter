@@ -182,6 +182,20 @@ public class RouteProcessor extends AbstractProcessor {
             // 分组信息记录 groupMap <Group分组,RouteMeta路由信息> 集合
             categories(routeMeta);
         }
+
+        //生成类需要实现的接口
+        TypeElement iRouteGroup = elementUtils.getTypeElement(Consts.IROUTE_GROUP);
+        log.i("---------" + iRouteGroup.getSimpleName());
+        TypeElement iRouteRoot = elementUtils.getTypeElement(Consts.IROUTE_ROOT);
+
+        /**
+         *  生成Group类 作用:记录 <地址,RouteMeta路由信息(Class文件等信息)>
+         */
+        generatedGroup(iRouteGroup);
+        /**
+         * 生成Root类 作用:记录 <分组，对应的Group类>
+         */
+        generatedRoot(iRouteRoot, iRouteGroup);
     }
 
     private void generatedGroup(TypeElement iRouteGroup) throws IOException {
