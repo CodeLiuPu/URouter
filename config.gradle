@@ -2,7 +2,7 @@ ext {
 
     // true 集成模式
     // false 组件模式
-    isModule = false
+    isModule = true
 
     appVersion = [
             versionCode: 1,

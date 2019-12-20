@@ -115,10 +115,10 @@ public class RouteProcessor extends AbstractProcessor {
 
         // 参数是模块名 为了防止 多模块/组件化 开发时, 生成相同的 xx$$ROOT$$ 文件
         Map<String, String> options = processingEnv.getOptions();
-        if (Utils.isEmpty(options)) {
+        if (!Utils.isEmpty(options)) {
             moduleName = options.get(Consts.ARGUMENTS_NAME);
         }
-        log.i("RouteProcessor Parmaters:" + moduleName);
+        log.i("RouteProcessor Parmaters: " + moduleName);
         if (Utils.isEmpty(moduleName)) {
             throw new RuntimeException("Not set Processor Parameters.");
         }
