@@ -144,7 +144,6 @@ public class RouteProcessor extends AbstractProcessor {
                     parseRoutes(routeElements);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    return false;
                 }
             }
             return true;
@@ -273,14 +272,15 @@ public class RouteProcessor extends AbstractProcessor {
                 ParameterSpec.builder(routes, "routes").build();
 
         // 函数 public void loadInfo(Map<String,Class<? extends IRouteGroup>> routes> routes)
-        MethodSpec.Builder loadIntoMethodOfRootBuilder = MethodSpec.methodBuilder(Consts.METHOD_LOAD_INTO)
+        MethodSpec.Builder loadIntoMethodOfRootBuilder =
+                MethodSpec.methodBuilder(Consts.METHOD_LOAD_INTO)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(rootParameterSpec);
 
         // 函数体
         for (Map.Entry<String, String> entry : rootMap.entrySet()) {
-            loadIntoMethodOfRootBuilder.addStatement("routes.put($S, $T.class)", entry,
+            loadIntoMethodOfRootBuilder.addStatement("routes.put($S, $T.class)", entry.getKey(),
                     ClassName.get(Consts.PACKAGE_OF_GENERATE_FILE, entry.getValue()));
         }
 

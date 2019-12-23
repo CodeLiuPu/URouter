@@ -69,8 +69,7 @@ public class URouter {
                 iRouteRoot.loadInto(Warehouse.groupsIndex);
             }
         }
-        for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse
-                .groupsIndex.entrySet()) {
+        for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse.groupsIndex.entrySet()) {
             Log.e(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry
                     .getValue() + "]");
         }
@@ -184,6 +183,13 @@ public class URouter {
         // 还未准备的
         if (null == routeMeta) {
             // 创建并调用 loadInto 函数, 并记录进仓库
+
+            for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse.groupsIndex.entrySet()) {
+                Log.e(TAG, " prepareCard Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry
+                        .getValue() + "]");
+                Log.e("TAG","prepareCard " +card.getGroup());
+            }
+
             Class<? extends IRouteGroup> groupMeta = Warehouse.groupsIndex.get(card.getGroup());
             if (null == groupMeta) {
                 String msg = "not found the route: " + card.getGroup() + " " + card.getPath();
