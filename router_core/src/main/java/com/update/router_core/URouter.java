@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.update.router_annotation.model.RouteMeta;
 import com.update.router_core.callback.NavigationCallback;
@@ -19,6 +20,7 @@ import com.update.router_core.template.IService;
 import com.update.router_core.utils.ClassUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -48,6 +50,12 @@ public class URouter {
      */
     public static void init(Application application) {
         mApp = application;
+        try {
+            loadInfo();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "初始化失败!", e);
+        }
     }
 
     public static void loadInfo() throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
@@ -61,11 +69,11 @@ public class URouter {
                 iRouteRoot.loadInto(Warehouse.groupsIndex);
             }
         }
-        //        for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse
-//                .groupsIndex.entrySet()) {
-//            Log.e(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry
-//                    .getValue() + "]");
-//        }
+        for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse
+                .groupsIndex.entrySet()) {
+            Log.e(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry
+                    .getValue() + "]");
+        }
     }
 
     public Postcard build(String path) {
@@ -130,7 +138,7 @@ public class URouter {
                 int flag = postcard.getFlag();
                 if (-1 != flag) {
                     intent.setFlags(flag);
-                } else if (currentContext instanceof Activity) {
+                } else if (!(currentContext instanceof Activity)) {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 }
 
@@ -149,9 +157,8 @@ public class URouter {
                         if ((0 != postcard.getEnterAnim() || 0 != postcard.getExitAnim())
                                 && currentContext instanceof Activity) {
                             //老版本
-                            ((Activity) currentContext).overridePendingTransition(postcard
-                                            .getEnterAnim()
-                                    , postcard.getExitAnim());
+                            ((Activity) currentContext).overridePendingTransition(
+                                    postcard.getEnterAnim(), postcard.getExitAnim());
                         }
                         // 跳转完成
                         if (null != callback) {
@@ -183,7 +190,6 @@ public class URouter {
                 throw new NoRouteFoundException(msg);
             }
             IRouteGroup iRouteGroup;
-
             try {
                 iRouteGroup = groupMeta.getConstructor().newInstance();
             } catch (Exception e) {

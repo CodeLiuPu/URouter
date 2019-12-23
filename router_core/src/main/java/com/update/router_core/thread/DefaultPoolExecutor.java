@@ -41,7 +41,9 @@ public class DefaultPoolExecutor {
         corePoolSize = Math.min(corePoolSize, MAX_CORE_POOL_SIZE);
 
         ThreadPoolExecutor threadPoolExecutor =
-                new ThreadPoolExecutor(corePoolSize, corePoolSize, SURPLUS_THREAD_LIFE, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(64), mThreadFactory);
+                new ThreadPoolExecutor(corePoolSize, corePoolSize,
+                        SURPLUS_THREAD_LIFE, TimeUnit.SECONDS,
+                        new ArrayBlockingQueue<Runnable>(64), mThreadFactory);
 
         // 核心线程允许被销毁
         threadPoolExecutor.allowCoreThreadTimeOut(true);

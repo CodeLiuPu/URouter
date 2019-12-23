@@ -12,6 +12,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        URouter.get().build(RouterConstants.Module1.ACTIVITY).navigation();
+        URouter.get()
+                .build(RouterConstants.Module1.ACTIVITY)
+                .navigation();
     }
 }

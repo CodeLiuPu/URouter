@@ -34,6 +34,7 @@ public class LoadExtraBuilder {
     private TypeMirror iServiceType;
 
     public LoadExtraBuilder(ParameterSpec parameterSpec) {
+        // 函数 public void loadExtra(Object target)
         builder = MethodSpec.methodBuilder(
                 Consts.METHOD_LOAD_EXTRA)
                 .addAnnotation(Override.class)
