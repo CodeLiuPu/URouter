@@ -18,4 +18,10 @@ public class RouterConstants {
         public static final String ACTIVITY = MODULE + "/activity2";
         public static final String SERVICE = MODULE + "/service2";
     }
+
+    public static class Module3 {
+        public static final String MODULE = "/module3";
+        public static final String ACTIVITY = MODULE + "/activity";
+        public static final String SERVICE = MODULE + "/service";
+    }
 }
